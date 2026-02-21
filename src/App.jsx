@@ -1,39 +1,44 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from "react";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [result, setResult] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const topics = ['basic', 'single page', 'rendering', 'dom', 'jsx']
+  const fetchData = async (endpoint) => {
+    try {
+      setLoading(true);
+      const res = await fetch(`http://localhost:5000/api/${endpoint}`);
+      if (!res.ok) throw new Error("Server error");
+      const data = await res.json();
+      setResult(data.value);
+    } catch (err) {
+      setResult("Error fetching data ❌");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Auto-load CPU info
+  useEffect(() => {
+    fetchData("cpu");
+  }, []);
 
   return (
-    <>
-      <h1>React Tutorial</h1>
-      <div>
-    
-        <table border="">
-          <a href="https://react.dev" target="_blank" rel="noopener noreferrer">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-        
-          <thead>
-            <tr>
-              <th>Topics</th>
-            </tr>
-          </thead>
-          <tbody>
-            {topics.map((topic, index) => (
-              <tr key={index}>
-                <td>{topic}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="container">
+      <h1>System Info Dashboard</h1>
+
+      <div className="buttons">
+        <button onClick={() => fetchData("free-memory")}>Free Memory</button>
+        <button onClick={() => fetchData("total-memory")}>Total Memory</button>
+        <button onClick={() => fetchData("cpu")}>CPU</button>
+        <button onClick={() => fetchData("user")}>User</button>
       </div>
-    </>
-  )
+
+      <div className="output">
+        {loading ? "Loading..." : result}
+      </div>
+    </div>
+  );
 }
 
-export default App
+export default App;
